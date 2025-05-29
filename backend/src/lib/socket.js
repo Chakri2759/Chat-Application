@@ -5,40 +5,58 @@ import express from "express";
 
 const app = express();
 const server = http.createServer(app);
-const io=new Server(server, {
+
+// Get allowed origins from environment variable or use default
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ["http://localhost:5173"];
+
+const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: function(origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ["GET", "POST"],
         credentials: true
-       
     },
     allowEIO3: true,
-    transports: ["websocket", "polling"]
+    transports: ["websocket", "polling"],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    maxHttpBufferSize: 1e6 // 1MB
 });
-const getReceiverSocketId = (userId) => {
-    return userSocketMap[userId] || null;
-}
-// To keep track of online users
-const userSocketMap = {}; //{userid: socket.id}
-    io.on("connection", (socket) => {  
-        console.log("New client connected", socket.id);
-        
-        // Add user to the map when they connect
-        socket.on("setup", (userId) => {
-            userSocketMap[userId] = socket.id;
-            io.emit("getOnlineUsers", Object.keys(userSocketMap));
-        });
 
-        socket.on("disconnect", () => {
-            console.log("Client disconnected", socket.id);
-            // Remove user from the map when they disconnect
-            const userId = Object.keys(userSocketMap).find(key => userSocketMap[key] === socket.id);
-            if (userId) {
-                delete userSocketMap[userId];
-            }
-            io.emit("getOnlineUsers", Object.keys(userSocketMap));
-        });
+// To keep track of online users
+const userSocketMap = new Map(); // Using Map instead of object for better memory management
+
+const getReceiverSocketId = (userId) => {
+    return userSocketMap.get(userId) || null;
+}
+
+io.on("connection", (socket) => {  
+    console.log("New client connected", socket.id);
     
+    // Add user to the map when they connect
+    socket.on("setup", (userId) => {
+        userSocketMap.set(userId, socket.id);
+        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Client disconnected", socket.id);
+        // Remove user from the map when they disconnect
+        for (const [userId, socketId] of userSocketMap.entries()) {
+            if (socketId === socket.id) {
+                userSocketMap.delete(userId);
+                break;
+            }
+        }
+        io.emit("getOnlineUsers", Array.from(userSocketMap.keys()));
+    });
 });
 
 export {io, server,app,getReceiverSocketId };
