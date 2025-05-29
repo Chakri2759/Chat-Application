@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
+
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === "development" ? "http://localhost:5001" : "");
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -108,7 +109,8 @@ export const useAuthStore = create((set, get) => ({
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      path: "/socket.io"
     });
 
     newSocket.on("connect", () => {
@@ -119,9 +121,16 @@ export const useAuthStore = create((set, get) => ({
 
     newSocket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
+      toast.error("Connection error. Please try refreshing the page.");
+    });
+
+    newSocket.on("error", (error) => {
+      console.error("Socket error:", error);
+      toast.error("Connection error. Please try refreshing the page.");
     });
 
     set({ socket: newSocket });
+    
     //listening for online users
     newSocket.on("getOnlineUsers", (userIds) => {
       console.log("Online users:", userIds);

@@ -1,12 +1,16 @@
 {
- 
   "name": "chat-app",
   "version": "1.0.0",
   "scripts": {
     "start": "node index.js",
-    "prefix backend": "cd backend && npm start"
+    "backend": "cd backend && npm start",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
