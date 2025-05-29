@@ -1,12 +1,14 @@
 {
-  "name": "chat-app",
+ "name": "chat-app",
   "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "backend": "cd backend && npm start",
-    "frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
-  },
+    
+    "build":"npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend", 
+    "start":"npm run start --prefix backend"
+
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
