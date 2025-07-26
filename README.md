@@ -18,19 +18,6 @@ A real-time **Chat Application** built using **Node.js**, **Express.js**, and **
 * **React.js/TailwindCSS/JavaScript** – Frontend
 * **MongoDB - Database
 
-## 📁 Project Structure
-
-```
-Chat-Application/
-├── public/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-├── server.js
-├── package.json
-└── README.md
-```
-
 ## ⚙️ How to Run Locally
 
 1. Clone the repository:
@@ -44,17 +31,19 @@ Chat-Application/
    ```bash
    cd Chat-Application
    ```
-
-3. Install dependencies:
-
+3. Start Frontend:
    ```bash
+   cd frontend
    npm install
+   npm start
    ```
 
 4. Start the server:
 
    ```bash
-   node server.js
+   cd backend
+   npm install
+   npm start
    ```
 
 5. Open your browser and go to:
